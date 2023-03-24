@@ -5,13 +5,6 @@ export default function MessageDisplay(props) {
   let i = 1;
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  useEffect(() => {
-    if (i <= 1 && props.messages.length) {
-      console.log("object")
-      setMessages(props.messages);
-      i++
-    }
-  }, []);
   // useEffect(() => {
   //   props.socket.once("newMessageReceived", (params) => {
   //     alert("message aya");
@@ -33,7 +26,7 @@ export default function MessageDisplay(props) {
   return (
     <div className="bg-yellow-200 h-screen flex flex-col justify-between p-2 m-2 overflow-y-auto ">
       <div className="overflow-scroll flex-1">
-        {messages.map((m) => {
+        {props.messages.map((m) => {
           {
             /* setMessages([...messages,m]) */
           }
