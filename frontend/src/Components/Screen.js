@@ -1,18 +1,23 @@
-import React from "react";
+import React, {  useContext } from "react";
 import { useEffect, useState, useRef } from "react";
 import socket from "../socketConfig";
 import supabase from "../config/supabase.config";
 import MessageDisplay from "./MessageDisplay";
+import { Context } from "../context";
 export default function ChatScreen() {
+  const {
+    messages,
+    user,
+    convo,
+    setMessages,
+    setUser,
+    // setUserObj,
+    setConvo,
+  } = useContext(Context);
+  const userObj = useRef({})
   const username = useRef("");
-  const userObj = useRef({});
-  const userConversations = useRef([]);
   const isRunned = useRef(false);
-  const [users, setuser] = useState("");
-  const [messages, setmessages] = useState([]);
   const [convos, setConvos] = useState([]);
-  const [message, setMessage] = useState("");
-  const [currentConvo, setCurrentConvo] = useState("");
 
   useEffect(() => {
     if (isRunned.current) return;
@@ -20,14 +25,16 @@ export default function ChatScreen() {
     socket.on("connect", () => {
       console.log("socket connected");
       const currentuser = window.prompt("enter username");
+      setUser(currentuser)
       chat(currentuser);
     });
     socket.on("newMessageReceived", (params) => {
-      console.log(currentConvo);
-        console.log(messages);
+      console.log(convo);
+      console.log(messages);
+      // setMessages()
     });
     async function chat(username1) {
-      username.current = username1;
+      setUser(username1);
       // setuser(users)
       const user = await supabase
         .from("users")
@@ -39,15 +46,15 @@ export default function ChatScreen() {
           .from("users")
           .select()
           .eq("username", username1);
-        userObj.current = newUser.data[0];
+        userObj.current=(newUser.data[0]);
       } else {
-        userObj.current = user.data[0];
+        userObj.current=(user.data[0]);
       }
       console.log(userObj);
       supabase
         .from("conversations")
         .select()
-        .eq("participant_user_id", userObj.current.id)
+        .eq("participant_user_id", userObj.current?.id)
         .then((data, err) => {
           console.log(data);
           setConvos(data.data);
@@ -56,25 +63,26 @@ export default function ChatScreen() {
 
     socket.on("conversationStarted", (params) => {
       console.log(params.messages.data);
-      setmessages(params.messages.data);
+      setMessages(params.messages.data);
     });
-  }, [currentConvo, messages]);
+  }, []);
   function HandleStart(convoid) {
     socket.emit("startConversation", {
       conversation: convoid,
       user: username.current,
     });
-    setCurrentConvo(convoid);
+    setConvo(convoid);
   }
   function HandleNew(convoid) {
     socket.emit("startConversation", {
       conversation: convoid,
       user: username.current,
     });
-    setCurrentConvo(convoid);
+    setConvo(convoid);
   }
   const convoBox = (id) => (
     <div
+      key={id}
       className="p-5 m-5 bg-indigo-500 "
       onClick={(e) => {
         HandleStart(e.target.innerText);
@@ -105,9 +113,9 @@ export default function ChatScreen() {
         </div>
       </div>
       <div className="basis-1/2">
-        {currentConvo ? (
+        {convo ? (
           <MessageDisplay
-            conversation={currentConvo}
+            conversation={convo}
             messages={messages}
             socket={socket}
             user={userObj.current}

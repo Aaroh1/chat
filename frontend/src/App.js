@@ -1,9 +1,13 @@
 import "./App.css";
 import ChatScreen from "./Components/Screen";
+import  ContextProvider  from "./context";
+
 function App() {
   return (
     <div className="App">
-      <ChatScreen/>
+      <ContextProvider>
+        <ChatScreen />
+      </ContextProvider>
     </div>
   );
 }
